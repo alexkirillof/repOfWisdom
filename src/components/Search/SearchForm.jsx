@@ -15,14 +15,13 @@ export const SearchForm = () => {
    setIsLoading(true);
    fetchData(API_ENDPOINT)
   }, []);
-
-  const fetchData = async (url)=>{
+  const fetchData = async(url)=> {
     try{
-      const responce = await fetch(url);
-      const json = responce.json();
+      const response = await fetch(url);
+      const json = await response.json();
       setData(json.results);
-      console.log('%c%s', 'color: lime;',json.results);
-      console.log('%c%s', 'color: blue;',data);
+      console.log('%c%s', 'color: blue;',json.results[3].phone);
+
     } catch (error){
       setError(error);
       console.log('%c%s', 'color: red;',error);
@@ -31,6 +30,7 @@ export const SearchForm = () => {
   const handleSearch =(query)=>{
     setSearchQuery(query);
   }
+
   return (
     <TextInput
       placeholder="П О И С К"
