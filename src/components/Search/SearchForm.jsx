@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
 
-import { StyleSheet, Text, View, TextInput, ActivityIndicator, FlatList, Image, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, View, TextInput, ActivityIndicator, FlatList, Image, TouchableOpacity, RefreshControl } from "react-native";
 import filter from "lodash.filter";
 
-const API_ENDPOINT = "https://randomuser.me/api/?results=30";
+const API_ENDPOINT = "https://647dde56af984710854a8134.mockapi.io/Posts";
 
-export const SearchForm = () => {
+export const SearchForm = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
@@ -22,9 +22,9 @@ export const SearchForm = () => {
     try {
       const response = await fetch(url);
       const json = await response.json();
-      setData(json.results);
-      console.log("%c%s", "color: blue;", json.results[5].login.username);
-      setFullData(json.results);
+      setData(json);
+      console.log("%c%s", "color: blue;", json[5].name);
+      setFullData(json);
       setIsLoading(false);
 
     } catch (error) {
@@ -34,9 +34,8 @@ export const SearchForm = () => {
     }
   };
 
-  const contains = ({ name, email }, query) => {
-    const { first, last } = name;
-    if (first.includes(query) || last.includes(query) || email.includes(query)) {
+  const contains = ( {name} , query) => {
+    if (name.includes(query)) {
       return true;
     }
     return false;
@@ -48,7 +47,6 @@ export const SearchForm = () => {
       return contains(user, formattedQuery);
     });
     setData(filteredData);
-
   };
 
 
@@ -80,22 +78,24 @@ export const SearchForm = () => {
         onChangeText={(query) => handleSearch(query)}
       />
 
-      {searchQuery && <FlatList
+      {searchQuery &&  <FlatList
         data={data}
         keyExtractor={(item) => {
-          item.login.username;
+          item.id;
         }}
-        scrollEnabled
+        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={()=>{setSearchQuery('')}}/>}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
 
-            <View style={styles.itemContainer}>
-              <Image source={{ uri: item.picture.thumbnail }}
+            <View  key={item.id}>
+              <TouchableOpacity style={styles.itemContainer}  onPress={() => navigation.navigate('Article', {id: item.id, name: item.name, email: item.email, avatar: item.avatar, telephone:item.telephone, description:item.description})}>
+              <Image source={{ uri: item.avatar }}
                      style={styles.image}
               />
               <View>
-                <Text> {item.name.first} {item.name.last}</Text>
-                <Text> {item.email} </Text>
+                <Text> {item.name} </Text>
               </View>
+                </TouchableOpacity>
             </View>
 
         )}
@@ -116,12 +116,12 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: "row",
     alignItems: "flex-start",
-    borderRadius: 20,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    height: 40,
+    backgroundColor:'#f3f6f0',
+    borderRadius: 25,
+    height: 60,
     marginLeft: 10,
     marginTop: 15,
+    padding:10
   },
   image: {
     width: 40,
